@@ -74,3 +74,14 @@ Two EventBus APIs require different mocks: client bus uses on()/emit(), runtime 
 - Test count grew from 1727 to 1832 across 61 files — all passing.
 - Key edge cases found: (1) @mention priority beats "team" keyword, (2) direct patterns beat @mentions, (3) AgentSessionManager.destroy() is safe on non-existent agents, (4) CharterCompiler.compileAll() silently skips invalid charters.
 - Pattern: EventBus mock for AgentSessionManager uses `on()` method (client EventBus pattern), not `subscribe()` (runtime EventBus pattern) — the two bus implementations have different APIs.
+
+### OTel observability tests — proactive (2026-02-22)
+- Created 4 new test files (54 tests) for OTel observability modules being built by Fortier and Edie.
+- **otel-provider.test.ts** (20 tests): `initializeOTel` returns `{tracing, metrics}` booleans; `getTracer()`/`getMeter()` return valid no-op instances when unconfigured; `shutdownOTel()` is safe to call with no initialization; config priority verified (explicit endpoint > `OTEL_EXPORTER_OTLP_ENDPOINT` env var > disabled). Also covers `initializeTracing()` and `initializeMetrics()` individually.
+- **otel-bridge.test.ts** (12 tests): `createOTelTransport()` returns a function conforming to `TelemetryTransport`. All 5 event types (`squad.init`, `squad.agent.spawn`, `squad.error`, `squad.run`, `squad.upgrade`) produce correctly-named spans. `squad.error` sets `SpanStatusCode.ERROR` and emits an `exception` event. Properties map to span attributes. Batch processing verified.
+- **otel-agent-traces.test.ts** (10 tests): Proactive — validates that `AgentSessionManager.spawn()` and `destroy()` create OTel spans with agent name and mode attributes. Error spans verified for invalid charters and resume of non-existent agents. Currently pass with `[PROACTIVE]` warnings since OTel instrumentation is not yet wired into AgentSessionManager.
+- **otel-coordinator-traces.test.ts** (12 tests): Proactive — validates that `Coordinator.route()` creates `squad.coordinator.route` spans with tier/message/agents attributes. Span hierarchy tested (route → execute). Currently pass with `[PROACTIVE]` warnings since OTel instrumentation is not yet wired into Coordinator.
+- Test count grew from 1832 to 1886 across 65 files — all passing.
+- Key discovery: `@opentelemetry/sdk-trace-base` v2.x uses `BasicTracerProvider` (not `NodeTracerProvider`), requires `spanProcessors` in constructor, and uses `trace.setGlobalTracerProvider()` instead of `provider.register()`.
+- `AgentSessionInfo` uses `charter.name` and `state` fields (not `name`/`status` directly).
+- OTel SDK deps (`@opentelemetry/api`, `@opentelemetry/sdk-trace-base`, `@opentelemetry/sdk-metrics`) installed at root for test resolution.
