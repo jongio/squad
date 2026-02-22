@@ -174,3 +174,23 @@ Fenster's src/utils/normalize-eol.ts utility is now applied to 8 parser entry po
 - Rebuilt SDK and CLI packages to update dist. All 1727 tests pass across 57 files.
 - Pattern: vitest resolves through compiled `dist/` files, not TypeScript source — barrel changes require a package rebuild to take effect.
 - Pattern: when consolidating deep imports to barrel paths, verify the barrel actually re-exports the needed symbols before assuming availability.
+
+### 📌 OTel Phase 4: Aspire command + Squad Observer file watcher (2026-02-22) — Fenster (Issues #265, #268)
+- **Issue #265 — `squad aspire` command** added at `packages/squad-cli/src/cli/commands/aspire.ts`:
+  - Launches the .NET Aspire dashboard for viewing Squad OTel telemetry.
+  - Auto-detects Docker vs dotnet Aspire workload; falls back to Docker.
+  - Sets `OTEL_EXPORTER_OTLP_ENDPOINT` env var so OTel providers auto-export.
+  - Flags: `--docker` (force Docker), `--port <number>` (custom OTLP port, default 18888).
+  - Wired into CLI entry point (`cli-entry.ts`) with help text.
+  - Subpath export: `@bradygaster/squad-cli/commands/aspire`.
+- **Issue #268 — SquadObserver file watcher** added at `packages/squad-sdk/src/runtime/squad-observer.ts`:
+  - Watches `.squad/` directory recursively via `fs.watch()` with debounce (200ms default).
+  - Classifies files into categories: agent, casting, config, decision, skill, unknown.
+  - Emits OTel spans (`squad.observer.start`, `squad.observer.stop`, `squad.observer.file_change`) with file.path, file.category, change.type attributes.
+  - Emits EventBus events (`agent:milestone` type) when an EventBus is provided.
+  - Full start/stop lifecycle with error handling and OTel error spans.
+  - Subpath export: `@bradygaster/squad-sdk/runtime/squad-observer`.
+  - Barrel export in SDK index.ts: `SquadObserver`, `classifyFile`, types.
+- **Tests:** 16 new tests (14 observer: classifyFile categories, start/stop, OTel spans, EventBus events, idempotency; 2 aspire: module exports). All 2024 tests passing.
+- **Pattern:** `classifyFile()` normalizes Windows backslashes before classification — cross-platform safe.
+- **Pattern:** Observer uses `fs.watch` with `{ recursive: true }` — works on Windows/macOS, may need inotify tuning on Linux.
