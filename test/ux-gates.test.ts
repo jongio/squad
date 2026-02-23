@@ -23,18 +23,10 @@ describe('UX Gates', () => {
     const output = harness.captureFrame();
     const lines = output.split('\n');
     
-    // Count lines that exceed reasonable terminal width
     const longLines = lines.filter((line) => line.length > 120);
-    
-    // Help text should be reasonably formatted - no lines over 120 chars
-    // (This is a quality gate, not a hard blocker at 80)
     expect(longLines.length).toBe(0);
     
-    // Count lines that are very long (over 80 chars)
     const veryLongLines = lines.filter((line) => line.length > 80);
-    
-    // Document how many lines exceed 80 chars (ideal width)
-    // This is informational - we're catching regression, not blocking existing behavior
     if (veryLongLines.length > 0) {
       console.log(`Info: ${veryLongLines.length} lines exceed 80 chars (ideal terminal width)`);
     }
@@ -46,7 +38,6 @@ describe('UX Gates', () => {
     
     const output = harness.captureFrame();
     
-    // Error message should include a hint about running 'squad help'
     expect(output).toMatch(/squad help/i);
     expect(output).toMatch(/Unknown command/i);
   });
@@ -58,10 +49,7 @@ describe('UX Gates', () => {
     const output = harness.captureFrame().trim();
     const lines = output.split('\n').filter((line) => line.trim());
     
-    // Should be exactly one line
     expect(lines.length).toBe(1);
-    
-    // Should match format: squad X.Y.Z
     expect(lines[0]).toMatch(/^squad\s+\d+\.\d+\.\d+/);
   });
 
@@ -71,7 +59,6 @@ describe('UX Gates', () => {
     
     const output = harness.captureFrame();
     
-    // Must include core commands
     expect(output).toContain('init');
     expect(output).toContain('upgrade');
     expect(output).toContain('status');
@@ -85,7 +72,6 @@ describe('UX Gates', () => {
     
     const output = harness.captureFrame();
     
-    // Should have clear section headers
     expect(output).toMatch(/Squad Status/i);
     expect(output).toMatch(/Active squad/i);
   });
@@ -95,8 +81,6 @@ describe('UX Gates', () => {
     await harness.waitForExit(5000);
     
     const exitCode = harness.getExitCode();
-    
-    // Doctor should exit with 0 (success) in this repo
     expect(exitCode).toBe(0);
   });
 });

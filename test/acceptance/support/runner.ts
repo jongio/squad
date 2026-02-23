@@ -17,9 +17,6 @@ export interface TestContext {
   [key: string]: unknown;
 }
 
-/**
- * Register a step definition.
- */
 export function registerStep(
   keyword: 'Given' | 'When' | 'Then',
   pattern: string | RegExp,
@@ -29,16 +26,13 @@ export function registerStep(
   registry[keyword].set(pattern, fn);
 }
 
-/**
- * Find and execute a step definition.
- */
 async function executeStep(
   step: GherkinStep,
   context: TestContext,
   registry: StepDefinitions
 ): Promise<void> {
   const stepMap = registry[step.keyword];
-  
+
   for (const [pattern, fn] of stepMap.entries()) {
     if (typeof pattern === 'string') {
       if (step.text === pattern) {
@@ -57,9 +51,6 @@ async function executeStep(
   throw new Error(`No step definition found for: ${step.keyword} ${step.text}`);
 }
 
-/**
- * Run a feature file as vitest tests.
- */
 export function runFeature(
   featureFilePath: string,
   registry: StepDefinitions
@@ -80,9 +71,6 @@ export function runFeature(
   });
 }
 
-/**
- * Create a new step definition registry.
- */
 export function createRegistry(): StepDefinitions {
   return {
     Given: new Map(),

@@ -36,3 +36,33 @@
 
 **Test Results:** All 13 tests passing (7 acceptance scenarios + 6 UX gates)
 
+- **Stack:** TypeScript (strict, ESM), Node.js >=20, Ink 6 (React for CLI), Vitest
+- **Key files:** vitest.config.ts, test/acceptance/ (E2E harness + Gherkin scenarios)
+
+## Learnings
+
+### E2E Coverage Expansion (2026-02-23)
+
+**Scenarios added (14 new, 21 total):**
+- init-command.feature: re-init in existing project, exit code
+- status-extended.feature: resolution details, no-squad directory isolation
+- doctor-extended.feature: diagnostic header, summary pass counts
+- help-comprehensive.feature: all core commands listed, flags section
+- error-paths.feature: special characters, invalid flags, help suggestion
+- exit-codes.feature: success (0) and failure (1) validation
+
+**Test infrastructure:**
+- test/acceptance/harness.ts: TerminalHarness with cwd option
+- test/acceptance/support/gherkin.ts: Minimal Gherkin parser
+- test/acceptance/support/runner.ts: Step registry + vitest mapping
+- test/acceptance/steps/cli-steps.ts: Step definitions
+- test/acceptance/features/*.feature: 11 feature files
+- test/ux-gates.test.ts: 6 UX quality gate tests
+
+**Key patterns:**
+- Absolute path resolution for cwd-isolated tests
+- mkdtempSync for no-squad scenarios
+- ANSI stripped, NO_COLOR=1, TERM=dumb for deterministic output
+- Negative assertions via 'does not contain' step
+
+**PR:** #348 (closes #326)

@@ -1,10 +1,10 @@
 import { spawn, ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
+import { resolve } from 'node:path';
 
 /**
  * Terminal harness for E2E testing the Squad CLI.
  * Uses child_process.spawn with pipes as a pragmatic cross-platform solution.
- * Can be upgraded to node-pty later for true PTY support when CI has build tools.
  */
 export class TerminalHarness extends EventEmitter {
   private process: ChildProcess | null = null;
@@ -15,38 +15,9 @@ export class TerminalHarness extends EventEmitter {
   private constructor(
     private readonly command: string,
     private readonly args: string[],
-    private readonly options: { cols?: number; rows?: number; env?: Record<string, string> }
+    private readonly options: { cols?: number; rows?: number; env?: Record<string, string>; cwd?: string }
   ) {
     super();
-  }
-
-  /**
-   * Spawn the CLI in a child process.
-   */
-  static async spawn(options?: {
-    cols?: number;
-    rows?: number;
-    env?: Record<string, string>;
-  }): Promise<TerminalHarness> {
-    const cols = options?.cols ?? 80;
-    const rows = options?.rows ?? 24;
-    const env = {
-      ...process.env,
-      COLUMNS: String(cols),
-      LINES: String(rows),
-      TERM: 'dumb', // Disable interactive features
-      NO_COLOR: '1', // Disable colors for cleaner output
-      ...options?.env,
-    };
-
-    const harness = new TerminalHarness('node', ['packages/squad-cli/dist/cli-entry.js'], {
-      cols,
-      rows,
-      env,
-    });
-
-    await harness.start();
-    return harness;
   }
 
   /**
@@ -54,7 +25,7 @@ export class TerminalHarness extends EventEmitter {
    */
   static async spawnWithArgs(
     args: string[],
-    options?: { cols?: number; rows?: number; env?: Record<string, string> }
+    options?: { cols?: number; rows?: number; env?: Record<string, string>; cwd?: string }
   ): Promise<TerminalHarness> {
     const cols = options?.cols ?? 80;
     const rows = options?.rows ?? 24;
@@ -67,10 +38,12 @@ export class TerminalHarness extends EventEmitter {
       ...options?.env,
     };
 
+    const cliEntry = resolve(process.cwd(), 'packages/squad-cli/dist/cli-entry.js');
+
     const harness = new TerminalHarness(
       'node',
-      ['packages/squad-cli/dist/cli-entry.js', ...args],
-      { cols, rows, env }
+      [cliEntry, ...args],
+      { cols, rows, env, cwd: options?.cwd }
     );
 
     await harness.start();
@@ -79,7 +52,7 @@ export class TerminalHarness extends EventEmitter {
 
   private async start(): Promise<void> {
     this.process = spawn(this.command, this.args, {
-      cwd: process.cwd(),
+      cwd: this.options.cwd || process.cwd(),
       env: this.options.env,
       stdio: ['pipe', 'pipe', 'pipe'],
       windowsHide: true,
@@ -106,26 +79,7 @@ export class TerminalHarness extends EventEmitter {
       this.emit('error', err);
     });
 
-    // Give it a moment to start
     await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  /**
-   * Send keystrokes to the CLI (for interactive mode).
-   */
-  async sendKeys(input: string): Promise<void> {
-    if (!this.process || !this.process.stdin) {
-      throw new Error('Process not started or stdin not available');
-    }
-    this.process.stdin.write(input);
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-
-  /**
-   * Send text + Enter.
-   */
-  async sendLine(text: string): Promise<void> {
-    await this.sendKeys(text + '\n');
   }
 
   /**
@@ -139,12 +93,9 @@ export class TerminalHarness extends EventEmitter {
       if (regex.test(this.outputBuffer)) {
         return this.outputBuffer;
       }
-
-      // If process exited, stop waiting
       if (this.exitCode !== null) {
         break;
       }
-
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
@@ -177,21 +128,6 @@ export class TerminalHarness extends EventEmitter {
   }
 
   /**
-   * Capture raw frame (with ANSI codes).
-   */
-  captureRawFrame(): string {
-    return this.outputBuffer;
-  }
-
-  /**
-   * Resize terminal (no-op in pipe mode, but maintained for API compatibility).
-   */
-  async resize(cols: number, rows: number): Promise<void> {
-    // In pipe mode, we can't resize. This is a no-op.
-    // If upgraded to node-pty, this would call pty.resize(cols, rows)
-  }
-
-  /**
    * Get all accumulated output.
    */
   getOutput(): string {
@@ -214,8 +150,7 @@ export class TerminalHarness extends EventEmitter {
 
     if (this.process) {
       this.process.kill('SIGTERM');
-      
-      // Wait for exit or force kill after 2s
+
       const killTimeout = setTimeout(() => {
         if (this.process) {
           this.process.kill('SIGKILL');
@@ -236,9 +171,6 @@ export class TerminalHarness extends EventEmitter {
     }
   }
 
-  /**
-   * Strip ANSI escape codes from text.
-   */
   private stripAnsi(text: string): string {
     // eslint-disable-next-line no-control-regex
     return text.replace(/\x1B\[[0-9;]*[a-zA-Z]/g, '');

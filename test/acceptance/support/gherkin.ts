@@ -1,6 +1,5 @@
 /**
  * Minimal Gherkin parser for .feature files.
- * Parses Feature, Scenario, Given/When/Then steps into structured data.
  */
 
 export interface GherkinStep {
@@ -25,16 +24,13 @@ export function parseFeature(content: string): GherkinFeature {
   let lastKeyword: GherkinStep['keyword'] = 'Given';
 
   for (const line of lines) {
-    // Skip empty lines and comments
     if (!line || line.startsWith('#')) continue;
 
-    // Feature declaration
     if (line.startsWith('Feature:')) {
       feature.name = line.substring(8).trim();
       continue;
     }
 
-    // Scenario declaration
     if (line.startsWith('Scenario:')) {
       if (currentScenario) {
         feature.scenarios.push(currentScenario);
@@ -46,7 +42,6 @@ export function parseFeature(content: string): GherkinFeature {
       continue;
     }
 
-    // Step keywords
     if (
       line.startsWith('Given ') ||
       line.startsWith('When ') ||
@@ -58,7 +53,6 @@ export function parseFeature(content: string): GherkinFeature {
       const keyword = line.substring(0, spaceIdx) as GherkinStep['keyword'];
       const text = line.substring(spaceIdx + 1).trim();
 
-      // "And" and "But" inherit the previous keyword type
       const effectiveKeyword =
         keyword === 'And' || keyword === 'But' ? lastKeyword : keyword;
 
@@ -72,7 +66,6 @@ export function parseFeature(content: string): GherkinFeature {
     }
   }
 
-  // Push final scenario
   if (currentScenario) {
     feature.scenarios.push(currentScenario);
   }
