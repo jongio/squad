@@ -4,21 +4,57 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import MarkdownIt from 'markdown-it';
+import hljs from 'highlight.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const md = new MarkdownIt({ html: true, linkify: true, typographer: true });
+const md = new MarkdownIt({
+  html: true, linkify: true, typographer: true,
+  highlight(str, lang) {
+    if (lang === 'mermaid') return str; // handled by custom fence rule
+    if (lang && hljs.getLanguage(lang)) {
+      try { return hljs.highlight(str, { language: lang }).value; } catch (_) { /* fall through */ }
+    }
+    try { return hljs.highlightAuto(str).value; } catch (_) { /* fall through */ }
+    return ''; // use default escaping
+  },
+});
+
+// Render mermaid code blocks as <div class="mermaid"> for client-side rendering
+const defaultFence = md.renderer.rules.fence.bind(md.renderer.rules);
+md.renderer.rules.fence = (tokens, idx, options, env, self) => {
+  const token = tokens[idx];
+  if (token.info.trim() === 'mermaid') {
+    return `<div class="mermaid">${token.content}</div>\n`;
+  }
+  return defaultFence(tokens, idx, options, env, self);
+};
 
 // Nav sections: directory name → display title (order matters)
 const SECTIONS = [
-  { dir: 'guide', title: 'Getting Started' },
+  { dir: 'get-started', title: 'Get Started' },
+  { dir: 'guide', title: 'Guide' },
   { dir: 'cli', title: 'CLI' },
   { dir: 'sdk', title: 'SDK' },
+  { dir: 'concepts', title: 'Concepts' },
   { dir: 'features', title: 'Features' },
   { dir: 'scenarios', title: 'Scenarios' },
+  { dir: 'reference', title: 'Reference' },
+  { dir: 'cookbook', title: 'Cookbook' },
+  { dir: 'launch', title: 'Launch' },
   { dir: 'blog', title: 'Blog' },
 ];
+
+// Explicit ordering within sections (filename without .md → priority)
+const SECTION_ORDER = {
+  'get-started': ['installation', 'first-session'],
+  'guide': ['index', 'installation', 'configuration', 'migration', 'feature-migration', 'first-session', 'github-issues-tour', 'tips-and-tricks', 'sample-prompts', 'whatsnew'],
+  'cli': ['shell', 'installation', 'vscode'],
+  'sdk': ['api-reference', 'integration', 'tools-and-hooks'],
+  'concepts': ['your-team', 'memory-and-knowledge', 'parallel-work', 'github-workflow', 'portability'],
+  'scenarios': ['existing-repo', 'solo-dev', 'issue-driven-dev', 'monorepo', 'ci-cd-integration', 'team-of-humans'],
+};
 
 // Parse optional YAML-style frontmatter (--- fenced)
 function parseFrontmatter(raw) {
@@ -61,10 +97,19 @@ function discoverDocs(docsDir) {
         const docTitle = meta.title || extractTitle(body) || titleFromFilename(f);
         return { name, dir, title: docTitle, href: `${dir}/${name}.html` };
       });
-    // index.md first; blog sorts by filename (chronological); rest alphabetical
+    // index.md first; use explicit order if defined; blog chronological; rest alphabetical
+    const order = SECTION_ORDER[dir];
     items.sort((a, b) => {
       if (a.name === 'index') return -1;
       if (b.name === 'index') return 1;
+      if (order) {
+        const ai = order.indexOf(a.name);
+        const bi = order.indexOf(b.name);
+        // Items in the order list come first, in that order; unlisted items go to end alphabetically
+        if (ai !== -1 && bi !== -1) return ai - bi;
+        if (ai !== -1) return -1;
+        if (bi !== -1) return 1;
+      }
       if (dir === 'blog') return a.name.localeCompare(b.name);
       return a.title.localeCompare(b.title);
     });
@@ -75,6 +120,32 @@ function discoverDocs(docsDir) {
   return sections;
 }
 
+// Discover the root index.md home page if it exists
+function discoverHomePage(docsDir) {
+  const indexPath = path.join(docsDir, 'index.md');
+  if (!fs.existsSync(indexPath)) return null;
+  const raw = fs.readFileSync(indexPath, 'utf-8');
+  const { meta, body } = parseFrontmatter(raw);
+  const title = meta.title || extractTitle(body) || 'Home';
+  return { name: 'index', title, href: 'index.html' };
+}
+
+// Discover standalone pages (e.g. whatsnew.md) that aren't in any section
+function discoverStandalonePages(docsDir) {
+  const pages = [];
+  const standaloneFiles = ['whatsnew.md'];
+  for (const f of standaloneFiles) {
+    const filePath = path.join(docsDir, f);
+    if (!fs.existsSync(filePath)) continue;
+    const name = f.replace('.md', '');
+    const raw = fs.readFileSync(filePath, 'utf-8');
+    const { meta, body } = parseFrontmatter(raw);
+    const title = meta.title || extractTitle(body) || titleFromFilename(f);
+    pages.push({ name, title, href: `${name}.html` });
+  }
+  return pages;
+}
+
 // Compute relative prefix from a subdir back to the dist root
 function assetsPrefix(subdir) {
   if (!subdir) return '';
@@ -82,37 +153,64 @@ function assetsPrefix(subdir) {
   return '../'.repeat(depth);
 }
 
-function buildNavHtml(sections, activeDir, activeFile) {
+function buildNavHtml(sections, activeDir, activeFile, { homePage, standalonePages } = {}) {
   const prefix = assetsPrefix(activeDir);
   let html = '<nav class="sidebar" id="sidebar">\n';
-  html += `<div class="sidebar-header"><a href="${prefix}guide/index.html" class="logo"><img src="${prefix}assets/squad-logo.png" alt="Squad" class="sidebar-logo-img"></a><button class="sidebar-close" onclick="toggleSidebar()">X</button></div>\n`;
+  html += `<div class="sidebar-header"><a href="${prefix}index.html" class="logo"><img src="${prefix}assets/squad-logo.png" alt="Squad" class="sidebar-logo-img"></a><button class="sidebar-close" onclick="toggleSidebar()">X</button></div>\n`;
   html += '<div class="sidebar-content">\n';
-  // Home link outside sections
-  const homeCls = (activeDir === 'guide' && activeFile === 'index') ? ' class="active"' : '';
-  html += `<a href="${prefix}guide/index.html"${homeCls}>Home</a>\n`;
+  // Home link
+  if (homePage) {
+    const homeCls = (!activeDir && activeFile === 'index') ? ' class="active"' : '';
+    html += `<a href="${prefix}index.html"${homeCls}>${homePage.title}</a>\n`;
+  }
   for (const section of sections) {
     html += '<details class="nav-section" open>\n';
     html += `<summary>${section.title}</summary>\n`;
     for (const item of section.items) {
-      if (item.dir === 'guide' && item.name === 'index') continue; // Home already above
       const href = `${prefix}${item.href}`;
       const cls = (item.dir === activeDir && item.name === activeFile) ? ' class="active"' : '';
       html += `<a href="${href}"${cls}>${item.title}</a>\n`;
     }
     html += '</details>\n';
   }
+  // Standalone pages at the bottom of the sidebar
+  if (standalonePages && standalonePages.length > 0) {
+    html += '<div class="nav-standalone">\n';
+    for (const page of standalonePages) {
+      const href = `${prefix}${page.href}`;
+      const cls = (!activeDir && activeFile === page.name) ? ' class="active"' : '';
+      html += `<a href="${href}"${cls}>${page.title}</a>\n`;
+    }
+    html += '</div>\n';
+  }
   html += '</div>\n</nav>';
   return html;
 }
 
-function buildSearchIndex(docsDir, sections) {
+function buildSearchIndex(docsDir, sections, { homePage, standalonePages } = {}) {
   const index = [];
+  // Index root home page
+  if (homePage) {
+    const raw = fs.readFileSync(path.join(docsDir, 'index.md'), 'utf-8');
+    const { body } = parseFrontmatter(raw);
+    const preview = body.replace(/^#+\s+.+$/gm, '').replace(/[`*_\[\]()#>|\\-]/g, '').replace(/\s+/g, ' ').trim().substring(0, 200);
+    index.push({ title: homePage.title, href: homePage.href, preview });
+  }
   for (const section of sections) {
     for (const item of section.items) {
       const raw = fs.readFileSync(path.join(docsDir, item.dir, `${item.name}.md`), 'utf-8');
       const { body } = parseFrontmatter(raw);
       const preview = body.replace(/^#+\s+.+$/gm, '').replace(/[`*_\[\]()#>|\\-]/g, '').replace(/\s+/g, ' ').trim().substring(0, 200);
       index.push({ title: item.title, href: item.href, preview });
+    }
+  }
+  // Index standalone pages
+  if (standalonePages) {
+    for (const page of standalonePages) {
+      const raw = fs.readFileSync(path.join(docsDir, `${page.name}.md`), 'utf-8');
+      const { body } = parseFrontmatter(raw);
+      const preview = body.replace(/^#+\s+.+$/gm, '').replace(/[`*_\[\]()#>|\\-]/g, '').replace(/\s+/g, ' ').trim().substring(0, 200);
+      index.push({ title: page.title, href: page.href, preview });
     }
   }
   return index;
@@ -155,12 +253,41 @@ async function build() {
     copyDirSync(assetsDir, path.join(distDir, 'assets'));
   }
 
+  // Copy highlight.js CSS theme into dist/assets/
+  const hljsCssDir = path.join(distDir, 'assets');
+  const hljsStylesRoot = path.dirname(fileURLToPath(import.meta.resolve('highlight.js/styles/github-dark.css')));
+  fs.copyFileSync(path.join(hljsStylesRoot, 'github-dark.css'), path.join(hljsCssDir, 'hljs-dark.css'));
+  fs.copyFileSync(path.join(hljsStylesRoot, 'github.css'), path.join(hljsCssDir, 'hljs-light.css'));
+
   const template = fs.readFileSync(templatePath, 'utf-8');
   const sections = discoverDocs(docsDir);
-  const searchIndex = buildSearchIndex(docsDir, sections);
+  const homePage = discoverHomePage(docsDir);
+  const standalonePages = discoverStandalonePages(docsDir);
+  const navExtras = { homePage, standalonePages };
+  const searchIndex = buildSearchIndex(docsDir, sections, navExtras);
   const searchIndexJson = JSON.stringify(searchIndex);
 
   let totalFiles = 0;
+
+  // Render root index.md as dist/index.html (home page)
+  if (homePage) {
+    const raw = fs.readFileSync(path.join(docsDir, 'index.md'), 'utf-8');
+    const { meta, body } = parseFrontmatter(raw);
+    const title = meta.title || extractTitle(body) || 'Home';
+    let content = md.render(body);
+    content = rewriteLinks(content);
+    const navHtml = buildNavHtml(sections, '', 'index', navExtras);
+    const html = template
+      .replace('{{TITLE}}', title)
+      .replace('{{CONTENT}}', content)
+      .replace('{{NAV}}', navHtml)
+      .replace('{{SEARCH_INDEX}}', searchIndexJson)
+      .replace(/href="assets\//g, 'href="assets/')
+      .replace(/src="assets\//g, 'src="assets/');
+    fs.writeFileSync(path.join(distDir, 'index.html'), html);
+    console.log('✓ Generated index.html (home)');
+    totalFiles++;
+  }
 
   for (const section of sections) {
     for (const item of section.items) {
@@ -176,7 +303,7 @@ async function build() {
       let content = md.render(body);
       content = rewriteLinks(content);
 
-      const navHtml = buildNavHtml(sections, item.dir, item.name);
+      const navHtml = buildNavHtml(sections, item.dir, item.name, navExtras);
       const prefix = assetsPrefix(item.dir);
 
       const html = template
@@ -193,10 +320,34 @@ async function build() {
     }
   }
 
-  // Root redirect to guide/index.html
-  const redirectHtml = '<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=guide/index.html"><title>Redirecting...</title></head><body><p>Redirecting to <a href="guide/index.html">documentation</a>...</p></body></html>';
-  fs.writeFileSync(path.join(distDir, 'index.html'), redirectHtml);
-  console.log('✓ Generated index.html (redirect)');
+  // Render standalone pages (e.g. whatsnew.md) into dist root
+  for (const page of standalonePages) {
+    const raw = fs.readFileSync(path.join(docsDir, `${page.name}.md`), 'utf-8');
+    const { meta, body } = parseFrontmatter(raw);
+    const title = meta.title || extractTitle(body) || titleFromFilename(`${page.name}.md`);
+    let content = md.render(body);
+    content = rewriteLinks(content);
+    const navHtml = buildNavHtml(sections, '', page.name, navExtras);
+    const html = template
+      .replace('{{TITLE}}', title)
+      .replace('{{CONTENT}}', content)
+      .replace('{{NAV}}', navHtml)
+      .replace('{{SEARCH_INDEX}}', searchIndexJson)
+      .replace(/href="assets\//g, 'href="assets/')
+      .replace(/src="assets\//g, 'src="assets/');
+    fs.writeFileSync(path.join(distDir, `${page.name}.html`), html);
+    console.log(`✓ Generated ${page.name}.html`);
+    totalFiles++;
+  }
+
+  // Fallback: if no home page from index.md, redirect to first section
+  if (!homePage) {
+    const firstSection = sections[0];
+    const fallbackTarget = firstSection ? `${firstSection.dir}/${firstSection.items[0]?.name || 'index'}.html` : 'index.html';
+    const redirectHtml = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${fallbackTarget}"><title>Redirecting...</title></head><body><p>Redirecting to <a href="${fallbackTarget}">documentation</a>...</p></body></html>`;
+    fs.writeFileSync(path.join(distDir, 'index.html'), redirectHtml);
+    console.log('✓ Generated index.html (redirect)');
+  }
 
   console.log(`\n✅ Docs site generated in ${distDir} (${totalFiles} pages)`);
 }
