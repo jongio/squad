@@ -1,6 +1,6 @@
 {
   "name": "@bradygaster/squad",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "private": true,
   "description": "Squad — Programmable multi-agent runtime for GitHub Copilot, built on @github/copilot-sdk",
   "type": "module",
@@ -24,6 +24,7 @@
     "@opentelemetry/sdk-trace-base": "^2.5.1",
     "@playwright/test": "^1.58.2",
     "@vitest/coverage-v8": "^3.2.4",
+    "highlight.js": "^11.11.1",
     "markdown-it": "^14.1.1",
     "playwright": "^1.58.2",
     "typescript": "^5.7.0",

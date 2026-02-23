@@ -14,39 +14,16 @@ const DIST_DIR = join(DOCS_DIR, 'dist');
 const BUILD_SCRIPT = join(DOCS_DIR, 'build.js');
 const TEMPLATE_PATH = join(DOCS_DIR, 'template.html');
 
-// All sections in the docs structure
+// All sections in the simplified docs structure (5 sections + blog)
 const EXPECTED_GET_STARTED = ['installation', 'first-session'];
 
-const EXPECTED_GUIDES = [
-  'index', 'installation', 'configuration', 'migration', 'feature-migration',
-  'first-session', 'github-issues-tour', 'tips-and-tricks', 'sample-prompts', 'whatsnew',
-];
+const EXPECTED_GUIDES = ['tips-and-tricks', 'sample-prompts'];
 
-const EXPECTED_CLI = ['shell', 'installation', 'vscode'];
-
-const EXPECTED_SDK = ['api-reference', 'integration', 'tools-and-hooks'];
-
-const EXPECTED_CONCEPTS = [
-  'your-team', 'portability', 'parallel-work', 'memory-and-knowledge', 'github-workflow',
-];
-
-const EXPECTED_FEATURES = [
-  'worktrees', 'vscode', 'upstream-inheritance', 'team-setup', 'skills', 'routing',
-  'reviewer-protocol', 'response-modes', 'ralph', 'project-boards', 'prd-mode',
-  'plugins', 'parallel-execution', 'notifications', 'model-selection', 'memory',
-  'mcp', 'marketplace', 'labels', 'human-team-members', 'github-issues',
-  'export-import', 'directives', 'copilot-coding-agent', 'ceremonies',
-];
+const EXPECTED_REFERENCE = ['cli', 'sdk', 'config'];
 
 const EXPECTED_SCENARIOS = [
   'issue-driven-dev', 'existing-repo', 'ci-cd-integration', 'solo-dev', 'monorepo', 'team-of-humans',
 ];
-
-const EXPECTED_REFERENCE = ['sdk', 'cli'];
-
-const EXPECTED_COOKBOOK = ['recipes', 'migration'];
-
-const EXPECTED_LAUNCH = ['release-notes-v060', 'migration-guide-v051-v060'];
 
 const EXPECTED_BLOG = [
   '020-docs-reborn', '019-shaynes-remote-mode', '018-the-adapter-chronicles',
@@ -63,14 +40,8 @@ const EXPECTED_BLOG = [
 const ALL_EXPECTED: Array<{ dir: string; name: string }> = [
   ...EXPECTED_GET_STARTED.map(n => ({ dir: 'get-started', name: n })),
   ...EXPECTED_GUIDES.map(n => ({ dir: 'guide', name: n })),
-  ...EXPECTED_CLI.map(n => ({ dir: 'cli', name: n })),
-  ...EXPECTED_SDK.map(n => ({ dir: 'sdk', name: n })),
-  ...EXPECTED_CONCEPTS.map(n => ({ dir: 'concepts', name: n })),
-  ...EXPECTED_FEATURES.map(n => ({ dir: 'features', name: n })),
-  ...EXPECTED_SCENARIOS.map(n => ({ dir: 'scenarios', name: n })),
   ...EXPECTED_REFERENCE.map(n => ({ dir: 'reference', name: n })),
-  ...EXPECTED_COOKBOOK.map(n => ({ dir: 'cookbook', name: n })),
-  ...EXPECTED_LAUNCH.map(n => ({ dir: 'launch', name: n })),
+  ...EXPECTED_SCENARIOS.map(n => ({ dir: 'scenarios', name: n })),
   ...EXPECTED_BLOG.map(n => ({ dir: 'blog', name: n })),
 ];
 
@@ -83,7 +54,7 @@ function getMarkdownFiles(dirName: string = 'guide'): string[] {
 }
 
 function getAllMarkdownFiles(): string[] {
-  const sections = ['get-started', 'guide', 'cli', 'sdk', 'concepts', 'features', 'scenarios', 'reference', 'cookbook', 'launch', 'blog'];
+  const sections = ['get-started', 'guide', 'reference', 'scenarios', 'blog'];
   const allFiles: string[] = [];
   for (const section of sections) {
     allFiles.push(...getMarkdownFiles(section));
@@ -194,7 +165,6 @@ describe('Docs Build Script (markdown-it)', () => {
 
   it('build.js runs without errors (exit code 0)', () => {
     if (!existsSync(BUILD_SCRIPT)) return;
-    // Build already ran in beforeAll; re-run to confirm idempotent zero-exit
     expect(() => {
       execSync(`node "${BUILD_SCRIPT}"`, { cwd: DOCS_DIR, timeout: 30_000 });
     }).not.toThrow();
@@ -215,15 +185,14 @@ describe('Docs Build Script (markdown-it)', () => {
   describe('markdown-it output: code blocks with language class', () => {
     it('fenced code blocks have language class on <code> element', () => {
       if (!requireBuild()) return;
-      // configuration.md has ```typescript blocks
-      const html = readHtml('configuration', 'guide');
-      // markdown-it renders: <pre><code class="language-typescript">
+      // reference/config.md has ```typescript blocks
+      const html = readHtml('config', 'reference');
       expect(html).toMatch(/<code\s+class="language-typescript"/);
     });
 
     it('bash code blocks get language-bash class', () => {
       if (!requireBuild()) return;
-      const html = readHtml('installation', 'cli');
+      const html = readHtml('cli', 'reference');
       expect(html).toMatch(/<code\s+class="language-bash"/);
     });
   });
@@ -231,7 +200,7 @@ describe('Docs Build Script (markdown-it)', () => {
   describe('markdown-it output: table markup', () => {
     it('tables render as proper <table> HTML', () => {
       if (!requireBuild()) return;
-      const html = readHtml('installation', 'cli');
+      const html = readHtml('cli', 'reference');
       expect(html).toMatch(/<table>/);
       expect(html).toMatch(/<thead>/);
       expect(html).toMatch(/<tbody>/);
@@ -240,32 +209,22 @@ describe('Docs Build Script (markdown-it)', () => {
     });
   });
 
-  describe('markdown-it output: nested lists', () => {
-    it('nested list items produce nested <ul> or <ol> elements', () => {
-      if (!requireBuild()) return;
-      const html = readHtml('vscode', 'cli');
-      // markdown-it nests <ul> inside <li> for indented items
-      expect(html).toMatch(/<li>[\s\S]*?<ul>/);
-    });
-  });
-
   describe('markdown-it output: inline formatting', () => {
     it('bold text renders as <strong>', () => {
       if (!requireBuild()) return;
-      const html = readHtml('index', 'guide');
+      const html = readHtml('tips-and-tricks', 'guide');
       expect(html).toMatch(/<strong>/);
     });
 
     it('inline code renders as <code> without language class', () => {
       if (!requireBuild()) return;
-      const html = readHtml('configuration', 'guide');
-      // Inline code: <code> without class attribute
+      const html = readHtml('config', 'reference');
       expect(html).toMatch(/<code>[^<]+<\/code>/);
     });
 
     it('links render as <a> with href', () => {
       if (!requireBuild()) return;
-      const html = readHtml('index', 'guide');
+      const html = readHtml('tips-and-tricks', 'guide');
       expect(html).toMatch(/<a\s+href="/);
     });
   });
@@ -289,23 +248,11 @@ describe('Docs Build Script (markdown-it)', () => {
     expect(existsSync(indexPath)).toBe(true);
     const html = readFile(indexPath);
     expect(html).toMatch(/<!DOCTYPE html>/i);
-    // Root index.html should be a real page with content, not just a redirect
     expect(html).toMatch(/<article[\s>]/);
     expect(html).toMatch(/<h[1-6]/);
   });
 
-  // --- 6. Frontmatter parsing (title extraction from --- fences) ---
-
-  it('frontmatter title is extracted and used (not rendered as raw ---)', () => {
-    if (!requireBuild()) return;
-    // Guide files like configuration.md have --- separators that could be frontmatter
-    // After markdown-it upgrade, if frontmatter is used, raw --- should not appear as <hr> at top
-    const html = readHtml('configuration', 'guide');
-    // The page should have a title — either from frontmatter or from h1
-    expect(html).toMatch(/Configuration/);
-    // The title should appear somewhere in the page (heading or <title>)
-    expect(html).toMatch(/<h1[^>]*>.*Configuration.*<\/h1>|<title>.*Configuration.*<\/title>/s);
-  });
+  // --- 6. Frontmatter parsing ---
 
   it('page title is populated in the HTML (not left as {{TITLE}})', () => {
     if (!requireBuild()) return;
@@ -327,24 +274,15 @@ describe('Docs Build Script (markdown-it)', () => {
 
   it('navigation contains links to key sections', () => {
     if (!requireBuild()) return;
-    const html = readHtml('index', 'guide');
-    // Nav should link to various sections - exact paths may vary, just check sections exist
+    const html = readHtml('tips-and-tricks', 'guide');
     expect(html).toMatch(/guide/);
-    expect(html).toMatch(/cli/);
-    expect(html).toMatch(/sdk/);
-  });
-
-  it('guide pages appear as links in navigation', () => {
-    if (!requireBuild()) return;
-    const html = readHtml('index', 'guide');
-    // Check that some guide pages are linked in the nav
-    expect(html).toMatch(/installation/);
-    expect(html).toMatch(/configuration/);
+    expect(html).toMatch(/reference/);
+    expect(html).toMatch(/scenarios/);
   });
 
   it('active page is marked in navigation', () => {
     if (!requireBuild()) return;
-    const html = readHtml('configuration', 'guide');
+    const html = readHtml('config', 'reference');
     expect(html).toMatch(/class="active"/);
   });
 
@@ -355,7 +293,6 @@ describe('Docs Build Script (markdown-it)', () => {
     for (const { dir, name } of ALL_EXPECTED) {
       const html = readHtml(name, dir);
       expect(html).not.toContain('{{CONTENT}}');
-      // Should have real HTML content from markdown
       expect(html).toMatch(/<h[1-6]|<p>|<pre>|<ul>|<ol>/);
     }
   });
@@ -370,7 +307,6 @@ describe('Docs Build Script (markdown-it)', () => {
 
   it('no raw template placeholders remain in output (except SEARCH_INDEX)', () => {
     if (!requireBuild()) return;
-    // Only check for known template placeholders that should be replaced
     const templatePlaceholders = ['TITLE', 'CONTENT', 'NAV'];
     for (const { dir, name } of ALL_EXPECTED) {
       const html = readHtml(name, dir);

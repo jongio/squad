@@ -32,27 +32,20 @@ md.renderer.rules.fence = (tokens, idx, options, env, self) => {
 };
 
 // Nav sections: directory name → display title (order matters)
+// Simplified to 5 core sections + blog. Brady's directive: fewer docs, action-oriented.
 const SECTIONS = [
   { dir: 'get-started', title: 'Get Started' },
   { dir: 'guide', title: 'Guide' },
-  { dir: 'cli', title: 'CLI' },
-  { dir: 'sdk', title: 'SDK' },
-  { dir: 'concepts', title: 'Concepts' },
-  { dir: 'features', title: 'Features' },
-  { dir: 'scenarios', title: 'Scenarios' },
   { dir: 'reference', title: 'Reference' },
-  { dir: 'cookbook', title: 'Cookbook' },
-  { dir: 'launch', title: 'Launch' },
+  { dir: 'scenarios', title: 'Scenarios' },
   { dir: 'blog', title: 'Blog' },
 ];
 
 // Explicit ordering within sections (filename without .md → priority)
 const SECTION_ORDER = {
   'get-started': ['installation', 'first-session'],
-  'guide': ['index', 'installation', 'configuration', 'migration', 'feature-migration', 'first-session', 'github-issues-tour', 'tips-and-tricks', 'sample-prompts', 'whatsnew'],
-  'cli': ['shell', 'installation', 'vscode'],
-  'sdk': ['api-reference', 'integration', 'tools-and-hooks'],
-  'concepts': ['your-team', 'memory-and-knowledge', 'parallel-work', 'github-workflow', 'portability'],
+  'guide': ['tips-and-tricks', 'sample-prompts'],
+  'reference': ['cli', 'sdk', 'config'],
   'scenarios': ['existing-repo', 'solo-dev', 'issue-driven-dev', 'monorepo', 'ci-cd-integration', 'team-of-humans'],
 };
 
