@@ -265,7 +265,7 @@ export const App: React.FC<AppProps> = ({ registry, renderer, teamRoot, version,
 
       <AgentPanel agents={agents} streamingContent={streamingContent} />
       <MessageStream messages={messages} agents={agents} streamingContent={streamingContent} processing={processing} activityHint={activityHint} agentActivities={agentActivities} thinkingPhase={thinkingPhase} />
-      <InputPrompt onSubmit={handleSubmit} disabled={processing} agentNames={agents.map(a => a.name)} />
+      <InputPrompt onSubmit={handleSubmit} disabled={processing} agentNames={agents.map(a => a.name)} messageCount={messages.length} />
     </Box>
   );
 };

@@ -8,6 +8,19 @@ interface InputPromptProps {
   prompt?: string;
   disabled?: boolean;
   agentNames?: string[];
+  /** Number of messages exchanged so far — drives progressive hint text. */
+  messageCount?: number;
+}
+
+/** Return context-appropriate placeholder hint based on session progress. */
+function getHintText(messageCount: number, narrow: boolean): string {
+  if (messageCount < 5) {
+    return narrow ? ' @agent or /help' : ' Type @agent or /help';
+  }
+  if (messageCount < 10) {
+    return narrow ? ' Tab · ↑↓ history' : ' Tab completes · ↑↓ history';
+  }
+  return narrow ? ' /status · /clear · /export' : ' /status · /clear · /export';
 }
 
 const SPINNER_FRAMES = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -17,6 +30,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
   prompt = '> ',
   disabled = false,
   agentNames = [],
+  messageCount = 0,
 }) => {
   const noColor = isNoColor();
   const width = useTerminalWidth();
@@ -177,7 +191,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
       <Text>{value}</Text>
       <Text color={noColor ? undefined : 'cyan'} bold>▌</Text>
       {!value && (
-        <Text dimColor>{narrow ? ' /help or ask anything...' : ' Type /help for commands, or just ask anything'}</Text>
+        <Text dimColor>{getHintText(messageCount, narrow)}</Text>
       )}
     </Box>
   );

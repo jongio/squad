@@ -344,6 +344,37 @@ describe('InputPrompt behavior', () => {
     expect(lastFrame()!).toContain('squad>');
   });
 
+  it('shows beginner hint when messageCount < 5', () => {
+    const { lastFrame } = render(
+      h(InputPrompt, { onSubmit: vi.fn(), disabled: false, messageCount: 0 })
+    );
+    expect(lastFrame()!).toContain('Type @agent or /help');
+  });
+
+  it('shows intermediate hint when messageCount is 5-9', () => {
+    const { lastFrame } = render(
+      h(InputPrompt, { onSubmit: vi.fn(), disabled: false, messageCount: 5 })
+    );
+    expect(lastFrame()!).toContain('Tab completes');
+    expect(lastFrame()!).toContain('history');
+  });
+
+  it('shows advanced hint when messageCount >= 10', () => {
+    const { lastFrame } = render(
+      h(InputPrompt, { onSubmit: vi.fn(), disabled: false, messageCount: 10 })
+    );
+    expect(lastFrame()!).toContain('/status');
+    expect(lastFrame()!).toContain('/clear');
+    expect(lastFrame()!).toContain('/export');
+  });
+
+  it('defaults to beginner hint when messageCount not provided', () => {
+    const { lastFrame } = render(
+      h(InputPrompt, { onSubmit: vi.fn(), disabled: false })
+    );
+    expect(lastFrame()!).toContain('Type @agent or /help');
+  });
+
   it('disabled prompt shows spinner animation', () => {
     const { lastFrame } = render(
       h(InputPrompt, {
@@ -1227,7 +1258,7 @@ describe('InputPrompt input buffering', () => {
     rerender(h(InputPrompt, { onSubmit, disabled: false }));
     const frame = lastFrame()!;
     // Should show placeholder, no buffered text
-    expect(frame).toContain('Type /help');
+    expect(frame).toContain('Type @agent or /help');
   });
 
   it('disabled state buffers keystrokes without submitting', () => {
