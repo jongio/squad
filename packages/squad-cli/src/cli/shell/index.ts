@@ -135,6 +135,25 @@ export async function runShell(): Promise<void> {
   let shellApi: ShellApi | undefined;
   const agentSessions = new Map<string, SquadSession>();
   let coordinatorSession: SquadSession | null = null;
+
+  // Eager SDK warm-up — start coordinator session before user's first message
+  // This runs in background so UI renders immediately
+  (async () => {
+    try {
+      debugLog('eager warm-up: creating coordinator session');
+      const systemPrompt = buildCoordinatorPrompt({ teamRoot });
+      coordinatorSession = await client.createSession({
+        streaming: true,
+        systemMessage: { mode: 'append', content: systemPrompt },
+        workingDirectory: teamRoot,
+      });
+      debugLog('eager warm-up: coordinator session ready');
+    } catch (err) {
+      debugLog('eager warm-up failed (non-fatal, will retry on first dispatch):', err);
+      // Non-fatal — first dispatch will create the session as before
+    }
+  })();
+
   const streamBuffers = new Map<string, string>();
 
   // StreamBridge wires streaming pipeline events into Ink component state.
