@@ -152,7 +152,7 @@ export const InputPrompt: React.FC<InputPromptProps> = ({
       <Text>{value}</Text>
       <Text color={noColor ? undefined : 'cyan'} bold>▌</Text>
       {!value && (
-        <Text dimColor>{narrow ? ' ask anything...' : ' Ask anything — Squad routes to the right agent'}</Text>
+        <Text dimColor>{narrow ? ' /help or ask anything...' : ' Type /help for commands, or just ask anything'}</Text>
       )}
     </Box>
   );
