@@ -108,7 +108,7 @@ export const MessageStream: React.FC<MessageStreamProps> = ({
                 </>
               ) : msg.role === 'system' ? (
                 <>
-                  <Text dimColor>▸ system:</Text>
+                  <Text dimColor>[system]</Text>
                   <Text dimColor wrap="wrap">{msg.content}</Text>
                 </>
               ) : (

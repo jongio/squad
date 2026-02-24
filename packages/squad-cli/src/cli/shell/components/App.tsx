@@ -167,8 +167,12 @@ export const App: React.FC<AppProps> = ({ registry, renderer, teamRoot, version,
   const bannerReady = true;
   const bannerDim = false;
 
-  // Pick a lead agent name for the first-run guided prompt
-  const leadAgent = welcome?.agents[0]?.name ?? 'Keaton';
+  // Prefer lead/coordinator for first-run hint, fall back to first agent
+  const leadAgent = welcome?.agents.find(a =>
+    a.role?.toLowerCase().includes('lead') ||
+    a.role?.toLowerCase().includes('coordinator') ||
+    a.role?.toLowerCase().includes('architect')
+  )?.name ?? welcome?.agents[0]?.name ?? 'your lead';
 
   // Determine ThinkingIndicator phase based on SDK connection state
   const thinkingPhase: ThinkingPhase = !onDispatch ? 'connecting' : 'routing';
