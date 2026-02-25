@@ -337,6 +337,7 @@ async function main(): Promise<void> {
     console.log(`Usage: squad [command] [options]\n`);
     console.log(`Commands:`);
     console.log(`  ${BOLD}init${RESET}       Create .squad/ in this repo`);
+    console.log(`  ${BOLD}hire${RESET}       Create a new squad ${DIM}(alias: init)${RESET}`);
     console.log(`             --global  Create personal squad directory`);
     console.log(`             --mode remote <path>`);
     console.log(`               Link to a remote team root`);
@@ -348,6 +349,10 @@ async function main(): Promise<void> {
     console.log(`  ${BOLD}status${RESET}     Show which squad is active`);
     console.log(`  ${BOLD}triage${RESET}     Watch issues and auto-triage to team`);
     console.log(`             [--interval <minutes>] (default: 10)`);
+    console.log(`  ${BOLD}loop${RESET}       Monitor work ${DIM}(alias: triage)${RESET}`);
+    console.log(`  ${BOLD}shell${RESET}      Launch interactive shell`);
+    console.log(`  ${BOLD}run${RESET}        Send a message to a specific agent`);
+    console.log(`             <agent> [prompt]`);
     console.log(`  ${BOLD}copilot${RESET}    Add/remove GitHub Copilot agent`);
     console.log(`             [--off] [--auto-assign]`);
     console.log(`  ${BOLD}plugin${RESET}     Manage plugins`);
@@ -360,6 +365,7 @@ async function main(): Promise<void> {
     console.log(`             Remove email addresses from squad state`);
     console.log(`             [directory] (default: .squad/)`);
     console.log(`  ${BOLD}doctor${RESET}     Check your setup`);
+    console.log(`  ${BOLD}heartbeat${RESET}  Health check ${DIM}(alias: doctor)${RESET}`);
     console.log(`  ${BOLD}link${RESET}       Connect to a remote team`);
     console.log(`             <team-repo-path>`);
     console.log(`  ${BOLD}upstream${RESET}   Manage upstream Squad sources`);
@@ -460,7 +466,8 @@ async function main(): Promise<void> {
   }
 
   // Route subcommands
-  if (cmd === 'init') {
+  // hire → alias for init (#501)
+  if (cmd === 'init' || cmd === 'hire') {
     const modeIdx = args.indexOf('--mode');
     const mode = (modeIdx !== -1 && args[modeIdx + 1]) ? args[modeIdx + 1] : 'local';
     const dest = hasGlobal ? resolveGlobalSquadPath() : process.cwd();
@@ -512,7 +519,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (cmd === 'triage' || cmd === 'watch') {
+  // loop → alias for triage (#509)
+  if (cmd === 'triage' || cmd === 'watch' || cmd === 'loop') {
     const { runWatch } = await import('./cli/commands/watch.js');
     const intervalIdx = args.indexOf('--interval');
     const intervalMinutes = (intervalIdx !== -1 && args[intervalIdx + 1])
@@ -582,7 +590,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  if (cmd === 'doctor') {
+  // heartbeat → alias for doctor (#503)
+  if (cmd === 'doctor' || cmd === 'heartbeat') {
     const { doctorCommand } = await import('./cli/commands/doctor.js');
     await doctorCommand(process.cwd());
     return;
@@ -612,6 +621,22 @@ async function main(): Promise<void> {
     console.log(`  ${DIM}Global:       ${globalPath}${RESET}`);
     console.log();
 
+    return;
+  }
+
+  // shell → explicit REPL launch (#507)
+  if (cmd === 'shell') {
+    await runShell();
+    return;
+  }
+
+  // run <agent> [prompt] → send a message to a specific agent (#504)
+  if (cmd === 'run') {
+    const agent = args[1];
+    if (!agent) {
+      fatal('Run: squad run <agent> [prompt]');
+    }
+    console.log(`Coming soon — use the REPL shell to interact with agents: ${BOLD}squad${RESET}`);
     return;
   }
 

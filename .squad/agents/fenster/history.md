@@ -469,6 +469,20 @@ Replaced regex-based markdownToHtml() with markdown-it for proper rendering of c
 ### 2026-02-24T17-25-08Z : Team consensus on public readiness
 📌 Full team assessment complete. All 7 agents: 🟡 Ready with caveats. Consensus: ship after 3 must-fixes (LICENSE, CI workflow, debug console.logs). No blockers to public source release. See .squad/log/2026-02-24T17-25-08Z-public-readiness-assessment.md and .squad/decisions.md for details.
 
+### 📌 Ghost Command Wiring (2026-02-24) — Fenster
+**Issues:** #501, #503, #504, #507, #509
+**Requested by:** Brady
+
+Wired 5 ghost commands that were documented but missing from CLI routing in cli-entry.ts:
+- `squad hire` → alias for `squad init` (team creation)
+- `squad heartbeat` → alias for `squad doctor` (health check)
+- `squad shell` → explicit REPL launch (same as no-args)
+- `squad loop` → alias for `squad triage` (work monitoring)
+- `squad run <agent>` → stub with "coming soon" message (deferred — needs session lifecycle work)
+
+**Approach:** Aliases added to existing if-conditions in command router. `shell` and `run` added as new blocks before the unknown-command catch-all. Help text updated to show all five commands with alias annotations.
+
+**Learning:** Aliasing in the CLI router is trivial — just extend the if-condition. The hard part is `run`, which needs non-interactive agent dispatch (session init, message send, teardown) that doesn't exist yet outside the REPL. Stubbed for now.
 ## Learnings
 
 ### 2026-02-24 : Wire upstream command (#505 → PR #534)
