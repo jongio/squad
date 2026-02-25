@@ -355,6 +355,8 @@ async function main(): Promise<void> {
     console.log(`  ${BOLD}doctor${RESET}     Check your setup`);
     console.log(`  ${BOLD}link${RESET}       Connect to a remote team`);
     console.log(`             <team-repo-path>`);
+    console.log(`  ${BOLD}upstream${RESET}   Manage upstream Squad sources`);
+    console.log(`             add|remove|list|sync`);
     console.log(`  ${BOLD}aspire${RESET}     Open Aspire dashboard`);
     console.log(`             --docker  Force Docker`);
     console.log(`             --port <number>  OTLP port`);
@@ -515,6 +517,12 @@ async function main(): Promise<void> {
     const portIdx = args.indexOf('--port');
     const port = (portIdx !== -1 && args[portIdx + 1]) ? parseInt(args[portIdx + 1]!, 10) : undefined;
     await runAspire({ docker: useDocker, port });
+    return;
+  }
+
+  if (cmd === 'upstream') {
+    const { upstreamCommand } = await import('./cli/commands/upstream.js');
+    await upstreamCommand(args.slice(1));
     return;
   }
 

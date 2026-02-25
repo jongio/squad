@@ -471,6 +471,8 @@ Replaced regex-based markdownToHtml() with markdown-it for proper rendering of c
 
 ## Learnings
 
+### 2026-02-24 : Wire upstream command (#505 → PR #534)
+The upstream.ts command was fully implemented but never wired into cli-entry.ts. Routing pattern is consistent: dynamic import + args.slice(1). Help text lives inline in the help block. Surgical 8-line change — no new dependencies needed. CLI now exposes 13 commands.
 ### Per-command --help/-h intercept pattern
 - Intercepting help flags BEFORE command dispatch is critical — without it, `squad init --help` runs init as a side effect
 - A single intercept point (one if-block before the routing switch) is cleaner than adding help checks inside each command handler
