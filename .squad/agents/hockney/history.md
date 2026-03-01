@@ -26,6 +26,13 @@
 
 ## Learnings
 
+### Banner simplification tests — Issues #626, #627 (2026-03-01)
+**Status:** Complete — 5 new tests in `test/first-run-gating.test.ts`, all 35 tests passing.
+- **Tests added:** Single CTA (no dual-path `squad init`), middle-dot `·` separators in usage line, concise "Type naturally" prefix, "Ctrl+C to exit" formatting, no redundant spacers between roster and usage line.
+- **Also fixed:** Updated existing #625 test that expected both `/init` and `squad init` — now aligns with single-CTA behavior.
+- **Test strategy:** Source-code structural assertions (read App.tsx as text, regex match on JSX patterns). Same pattern as #607 and #625 tests — deterministic, no Ink rendering needed.
+- **Key finding:** Tests written in parallel with Cheritto's code changes. All passed because Cheritto had already committed the banner changes on `squad/626-627-banner-polish` branch.
+
 ### First-run gating tests — Issue #607 (2026-03-01)
 **Status:** Complete — 25 new tests in `test/first-run-gating.test.ts`, all passing.
 - **Categories:** Banner renders once (3), First-run hint (5), Console warning suppression (4), Assembled message gating (5), Session-scoped Static keys (5), Terminal clear ordering (3).

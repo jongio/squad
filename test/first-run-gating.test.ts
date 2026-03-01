@@ -577,8 +577,8 @@ describe('#625 — Redundant init messaging eliminated', () => {
     expect(firstRunContent).toBe('assembled');
   });
 
-  it('banner text prioritizes /init over exit+squad init', async () => {
-    // App.tsx line 300: text should mention /init first in the guidance string
+  it('banner text uses single /init CTA (no dual-path)', async () => {
+    // App.tsx line 300: text should mention /init only — no 'squad init' dual-path (#626)
     const fs = await import('node:fs');
     const source = fs.readFileSync(
       join(process.cwd(), 'packages', 'squad-cli', 'src', 'cli', 'shell', 'components', 'App.tsx'),
@@ -589,12 +589,94 @@ describe('#625 — Redundant init messaging eliminated', () => {
     const guidanceMatch = source.match(/rosterAgents\.length === 0[\s\S]*?<Text[^>]*>[^<]*\/init[^<]*<\/Text>/);
     expect(guidanceMatch).not.toBeNull();
 
-    // /init should appear before 'squad init' in the guidance text
     const guidanceLine = guidanceMatch![0];
-    const initSlashIndex = guidanceLine.indexOf('/init');
-    const squadInitIndex = guidanceLine.indexOf('squad init');
-    expect(initSlashIndex).toBeGreaterThan(-1);
-    expect(squadInitIndex).toBeGreaterThan(-1);
-    expect(initSlashIndex).toBeLessThan(squadInitIndex);
+    expect(guidanceLine).toContain('/init');
+    expect(guidanceLine).not.toContain('squad init');
+  });
+});
+
+// ============================================================================
+// Banner simplification (#626, #627)
+// ============================================================================
+
+describe('Banner simplification (#626, #627)', () => {
+  const appPath = join(process.cwd(), 'packages', 'squad-cli', 'src', 'cli', 'shell', 'components', 'App.tsx');
+
+  async function readAppSource(): Promise<string> {
+    const fs = await import('node:fs');
+    return fs.readFileSync(appPath, 'utf-8');
+  }
+
+  it('Banner init message uses single CTA — /init only, no squad init', async () => {
+    const source = await readAppSource();
+
+    // Find the empty-roster guidance line (rosterAgents.length === 0 branch)
+    const emptyRosterBlock = source.match(/rosterAgents\.length === 0[\s\S]*?<Text[^>]*>([^<]*\/init[^<]*)<\/Text>/);
+    expect(emptyRosterBlock).not.toBeNull();
+
+    const guidanceText = emptyRosterBlock![1];
+    expect(guidanceText).toContain('/init');
+    expect(guidanceText).not.toContain('squad init');
+  });
+
+  it('Usage line uses middle-dot separators (U+00B7)', async () => {
+    const source = await readAppSource();
+
+    // Find the usage/hint line — the one with @Agent and /help
+    const usageLine = source.match(/<Text[^>]*>[^<]*@Agent[^<]*<\/Text>/);
+    expect(usageLine).not.toBeNull();
+
+    const lineText = usageLine![0];
+    // Must use · (middle dot U+00B7) as separator
+    expect(lineText).toContain('\u00B7');
+    // Must NOT use em-dash or plain hyphen as separator
+    expect(lineText).not.toContain('\u2014'); // em-dash
+    expect(lineText).not.toMatch(/ — /);      // spaced em-dash
+    expect(lineText).not.toMatch(/ - /);       // spaced hyphen separator
+  });
+
+  it('Usage line is concise — starts with "Type naturally"', async () => {
+    const source = await readAppSource();
+
+    // Find the usage line containing @Agent
+    const usageLine = source.match(/<Text[^>]*>[^<]*@Agent[^<]*<\/Text>/);
+    expect(usageLine).not.toBeNull();
+
+    const lineText = usageLine![0];
+    expect(lineText).toContain('Type naturally');
+    expect(lineText).not.toContain('Just type what you need');
+  });
+
+  it('Ctrl+C formatting — "Ctrl+C to exit" not "Ctrl+C exit"', async () => {
+    const source = await readAppSource();
+
+    // Find the usage line with Ctrl+C
+    const usageLine = source.match(/<Text[^>]*>[^<]*Ctrl\+C[^<]*<\/Text>/);
+    expect(usageLine).not.toBeNull();
+
+    const lineText = usageLine![0];
+    expect(lineText).toContain('Ctrl+C to exit');
+    expect(lineText).not.toMatch(/Ctrl\+C exit(?! )/); // "Ctrl+C exit" without "to"
+  });
+
+  it('No redundant spacers — at most one empty Text between roster/init and usage line', async () => {
+    const source = await readAppSource();
+
+    // Extract the headerElement useMemo block
+    const headerBlock = source.match(/const headerElement[\s\S]*?useMemo\(\(\)\s*=>\s*\([\s\S]*?\), \[/);
+    expect(headerBlock).not.toBeNull();
+
+    const block = headerBlock![0];
+    // Find the section between roster/init (rosterAgents.length === 0) and the usage line (@Agent)
+    const rosterEndIdx = block.lastIndexOf('rosterAgents.length === 0');
+    const usageLineIdx = block.indexOf('@Agent', rosterEndIdx);
+    expect(rosterEndIdx).toBeGreaterThan(-1);
+    expect(usageLineIdx).toBeGreaterThan(-1);
+
+    const between = block.slice(rosterEndIdx, usageLineIdx);
+    // Count standalone spacer lines: {bannerReady && <Text>{' '}</Text>}
+    const spacerMatches = between.match(/\{bannerReady && <Text>\{' '\}<\/Text>\}/g);
+    const spacerCount = spacerMatches ? spacerMatches.length : 0;
+    expect(spacerCount).toBeLessThanOrEqual(1);
   });
 });
