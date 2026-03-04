@@ -235,7 +235,7 @@ If NOT checked, STOP. Do not proceed.
 ## Final Checklist
 - [ ] **v0.8.18 tag exists on beta** (public repo migration marker at merge commit)
 - [x] **origin/migration pushed to beta/migration**
-- [ ] **beta/migration merged to beta/main**
+- [x] **beta/migration merged to beta/main**
 - [ ] **Both npm packages published: squad-cli@0.8.18, squad-sdk@0.8.18**
 - [ ] **GitHub Release v0.8.18 created on beta repo** (public release marker)
 - [ ] **Beta users have upgrade path documented** (npm 0.8.18 installation)
