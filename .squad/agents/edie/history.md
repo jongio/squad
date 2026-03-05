@@ -200,3 +200,10 @@ All four agents shipped Phase 2 in parallel: Fortier wired TTFT/duration/through
 - Types re-exported from `src/types.ts` barrel (type-only, zero runtime). `RoutingRule` aliased as `BuilderRoutingRule` to avoid collision with existing `RoutingRule` exports from `runtime/config.ts`
 - Functions + types exported from `src/index.ts` barrel. Subpath export `./builders` added to `package.json` (types-first condition)
 - Build clean (`tsc --noEmit` zero errors, `npm run build` emits all `.js` + `.d.ts` + `.d.ts.map`), 3512/3554 tests pass (41 failures pre-existing)
+
+### Builder conversion completeness — ensuring round-trip fidelity
+- Added `description?: string` to `AgentDefinition` — captures the tagline/blockquote line from charters (e.g. `> Precise, type-obsessed...`). Build generates it as `> {description}` in charter markdown
+- Added `description?: string` to `RoutingRule` — captures the "Examples" column from routing.md tables. Build generates it as ` — {description}` suffix on routing entries
+- Validation added to `defineAgent` and `defineRouting` for both new fields (optional string assertion)
+- Converted root `squad.config.ts` from old `SquadConfig` type to full builder syntax: `defineSquad()` composing `defineTeam()`, 20× `defineAgent()`, `defineRouting()` with 20 rules, `defineCasting()`. This is the real-world proof that a markdown squad converts cleanly to SDK-first config
+- Build compiles clean, 36/36 builder tests + 24/24 build-command tests pass

@@ -155,6 +155,7 @@ export function defineAgent(config: AgentDefinition): AgentDefinition {
   assertObject(config, 'defineAgent');
   assertNonEmptyString(config.name, 'name', 'defineAgent');
   assertNonEmptyString(config.role, 'role', 'defineAgent');
+  assertOptionalString(config.description, 'description', 'defineAgent');
   assertOptionalString(config.charter, 'charter', 'defineAgent');
   assertOptionalString(config.model, 'model', 'defineAgent');
   assertOptionalArray(config.tools, 'tools', 'defineAgent');
@@ -216,6 +217,7 @@ export function defineRouting(config: RoutingDefinition): RoutingDefinition {
       assertStringUnion(rule.tier, ROUTING_TIERS, 'rules[].tier', 'defineRouting');
     }
     assertOptionalNumber(rule.priority, 'rules[].priority', 'defineRouting');
+    assertOptionalString(rule.description, 'rules[].description', 'defineRouting');
   }
 
   return config;

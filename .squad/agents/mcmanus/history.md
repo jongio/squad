@@ -28,6 +28,81 @@
 
 ## Learnings
 
+### 2026-03-08: Phase 1 SDK-First Mode documentation
+
+**Status:** Complete. Created comprehensive SDK-First Mode documentation across 3 files.
+
+**Work completed:**
+
+1. **docs/sdk-first-mode.md** (new, 18.5 KB):
+   - **Opening:** Problem statement: SDK-First = TypeScript config in code, not manual markdown.
+   - **Quick start:** 3-step walkthrough (install SDK, create squad.config.ts, run `squad build`)
+   - **Builder functions (8 total):**
+     - `defineTeam()` — team metadata, project context, members
+     - `defineAgent()` — role, tools, model, capabilities with proficiency levels (expert/proficient/basic)
+     - `defineRouting()` — pattern matching, priority, tier system (direct/lightweight/standard/full)
+     - `defineCeremony()` — schedule, participants, agenda
+     - `defineHooks()` — governance (write paths, blocked commands, PII scrubbing)
+     - `defineCasting()` — universe allowlists, overflow strategy
+     - `defineTelemetry()` — OTel configuration
+     - `defineSquad()` — top-level composition
+   - **`squad build` command:**
+     - Flags: `--check` (validate), `--dry-run` (preview), `--watch` (stub)
+     - Generated files and protection (decisions.md, history.md never overwritten)
+     - Config discovery order: squad/index.ts → squad.config.ts → squad.config.js
+   - **Validation:** Runtime type guards, no external dependencies (no Zod), descriptive errors
+   - **Migration guide:** Before/after comparison
+   - **Best practices:** 7 recommendations
+   - **Full example:** 100-line realistic config with all sections
+   - **See Also links** to SDK reference and governance guides
+   - **Tone:** Clear, factual, substantiated with actual code from source files
+
+2. **docs/reference/sdk.md** (updated):
+   - Added "Builder Functions (SDK-First Mode)" section after Configuration
+   - 8 builder function signatures with type definitions and code examples
+   - Links to new SDK-First Mode guide for comprehensive docs
+   - Maintains consistency with existing SDK reference structure
+
+3. **README.md** (updated):
+   - Added "SDK-First Mode" subsection in "What Gets Created" section
+   - Brief explanation (3 paragraphs) with code example
+   - Link to full SDK-First Mode guide
+   - Positions it as alternative to manual markdown maintenance
+   - Maintains concise README spirit (full details in dedicated doc)
+
+4. **CHANGELOG.md** (updated):
+   - Added "SDK-First Mode (Phase 1)" to Unreleased section
+   - 8 bullet points for builder functions
+   - 3 bullets for `squad build` command with flags
+   - SDK Mode Detection note
+   - Documentation subsection (guide, reference updates, README)
+
+**Key messaging decisions:**
+- Emphasis on "single source of truth in code" vs. manual markdown
+- Type safety + runtime validation as primary selling points
+- No external dependencies (no Zod, JSON Schema) — clean and lightweight
+- Practical examples from actual builder code
+- Tone: Educational, not hyped. Show what it does, not why it's "amazing"
+
+**Source of truth:**
+- Builder types from `packages/squad-sdk/src/builders/types.ts` (218 lines)
+- Builder implementations from `packages/squad-sdk/src/builders/index.ts` (396 lines)
+- CLI command from `packages/squad-cli/src/cli/commands/build.ts` (424 lines)
+- All code examples are real and functional
+
+**Tone applied:**
+- No hype: "Prefer TypeScript?" instead of "Revolutionize your team config"
+- Substantiated: Every builder field documented with type and purpose
+- Practical: Examples are runnable and realistic
+- Complete: Covers builder API, command flags, validation, config discovery, best practices
+
+**Impact:**
+- Users can now discover and learn SDK-First Mode without digging through code
+- Complete API reference enables autocomplete + IDE support
+- Migration path clear for teams transitioning from manual config
+- CHANGELOG entry positions Phase 1 as significant product milestone
+- Documentation prepares users for `squad build` command availability
+
 ### 2026-03-06: CLI help vs README audit — command reference corrected
 
 **Status:** Complete. README.md "All Commands" section updated to match CLI --help output.

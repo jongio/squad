@@ -84,6 +84,16 @@
 
 ---
 
+## 9. azure-function-squad
+
+**Azure Function meets multi-agent review.** An HTTP POST carries content to a serverless endpoint, which wakes up a Content Review Squad — three specialist agents (Tone Reviewer, Technical Reviewer, Copy Editor) that analyze the submission from different angles. Returns a structured JSON report with per-agent scores, findings, and a consensus verdict. Demonstrates the SDK-First builder pattern (`defineSquad()`, `defineTeam()`, `defineAgent()`, `defineRouting()`) wired into Azure Functions v4, making it a ready-to-deploy serverless agent pipeline.
+
+- **SDK APIs:** `defineSquad()`, `defineTeam()`, `defineAgent()`, `defineRouting()`, `SquadSDKConfig`
+- **Difficulty:** Intermediate
+- **Estimated LOC:** ~180–220
+
+---
+
 ## Summary Table
 
 | # | Sample | Difficulty | Est. LOC | Key Theme |
@@ -96,7 +106,8 @@
 | 6 | cost-aware-router | Int–Advanced | ~180–220 | Budget-aware routing |
 | 7 | skill-discovery | Intermediate | ~140–170 | Knowledge sharing |
 | 8 | autonomous-pipeline | Advanced | ~350–450 | Full showcase + dashboard |
+| 9 | azure-function-squad | Intermediate | ~180–220 | Azure Functions + SDK-First config |
 
-**Total estimated LOC across all 8 samples: ~1,280–1,620**
+**Total estimated LOC across all 9 samples: ~1,460–1,840**
 
 > ⚠️ Samples are being built by individual agents. This doc is the portfolio overview only.

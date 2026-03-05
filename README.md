@@ -216,6 +216,25 @@ When agents finish, the coordinator immediately chains follow-up work. If you st
 
 **Commit this folder.** Your team persists. Names persist. Anyone who clones gets the team — with the same cast.
 
+### SDK-First Mode (New in Phase 1)
+
+Prefer TypeScript? You can define your team in code instead of markdown. Create a `squad.config.ts` with builder functions, run `squad build`, and the `.squad/` files are generated automatically.
+
+```typescript
+// squad.config.ts
+import { defineSquad, defineTeam, defineAgent } from '@bradygaster/squad-sdk';
+
+export default defineSquad({
+  team: defineTeam({ name: 'Platform Squad', members: ['@edie', '@mcmanus'] }),
+  agents: [
+    defineAgent({ name: 'edie', role: 'TypeScript Engineer', model: 'claude-sonnet-4' }),
+    defineAgent({ name: 'mcmanus', role: 'DevRel', model: 'claude-haiku-4.5' }),
+  ],
+});
+```
+
+Run `squad build` to generate all the markdown. See the [SDK-First Mode Guide](docs/sdk-first-mode.md) for full documentation.
+
 ---
 
 ## Monorepo Development

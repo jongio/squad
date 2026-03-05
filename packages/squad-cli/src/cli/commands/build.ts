@@ -154,7 +154,8 @@ function generateRoutingMd(config: SquadSDKConfig): string {
   const rules = config.routing.rules;
   for (const rule of rules) {
     const agents = rule.agents.join(', ');
-    lines.push(`- \`${rule.pattern}\` → ${agents}`);
+    const desc = rule.description ? ` — ${rule.description}` : '';
+    lines.push(`- \`${rule.pattern}\` → ${agents}${desc}`);
   }
 
   lines.push('');
@@ -168,6 +169,10 @@ function generateCharterMd(agent: AgentDefinition): string {
   const role = agent.role;
 
   lines.push(`# ${name} — ${role}\n`);
+
+  if (agent.description) {
+    lines.push(`> ${agent.description}\n`);
+  }
 
   if (agent.charter) {
     lines.push(agent.charter);

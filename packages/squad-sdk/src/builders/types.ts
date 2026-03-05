@@ -60,6 +60,9 @@ export interface AgentDefinition {
   /** Human-readable role title. */
   readonly role: string;
 
+  /** One-line tagline or description (rendered as blockquote in charter). */
+  readonly description?: string;
+
   /** Path to charter markdown or inline charter text. */
   readonly charter?: string;
 
@@ -92,6 +95,9 @@ export interface RoutingRule {
 
   /** Numeric priority — lower wins. */
   readonly priority?: number;
+
+  /** Human-readable description or examples for this rule. */
+  readonly description?: string;
 }
 
 export interface RoutingDefinition {

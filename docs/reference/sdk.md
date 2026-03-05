@@ -101,6 +101,252 @@ interface AgentConfig {
 
 ---
 
+## Builder Functions (SDK-First Mode)
+
+Type-safe team configuration with runtime validation. Each builder accepts a config object, validates it, and returns the typed value.
+
+> **New in Phase 1** — SDK-First Mode lets you define teams in TypeScript instead of manually maintaining markdown. Run `squad build` to generate `.squad/` files.
+
+See [SDK-First Mode Guide](../sdk-first-mode.md) for comprehensive documentation and examples.
+
+### `defineTeam(config): TeamDefinition`
+
+Define team metadata, members, and project context.
+
+```typescript
+const team = defineTeam({
+  name: 'Platform Squad',
+  description: 'Full-stack engineering team',
+  projectContext: 'React/Node monorepo, TypeScript strict mode',
+  members: ['@edie', '@mcmanus', '@fenster'],
+});
+```
+
+**Type:**
+
+```typescript
+interface TeamDefinition {
+  readonly name: string;
+  readonly description?: string;
+  readonly projectContext?: string;
+  readonly members: readonly string[];
+}
+```
+
+---
+
+### `defineAgent(config): AgentDefinition`
+
+Define a single agent with role, tools, model, and capabilities.
+
+```typescript
+const edie = defineAgent({
+  name: 'edie',
+  role: 'TypeScript Engineer',
+  model: 'claude-sonnet-4',
+  tools: ['grep', 'edit', 'powershell', 'view'],
+  capabilities: [
+    { name: 'type-system', level: 'expert' },
+    { name: 'testing', level: 'proficient' },
+  ],
+  status: 'active',
+});
+```
+
+**Type:**
+
+```typescript
+interface AgentDefinition {
+  readonly name: string;
+  readonly role: string;
+  readonly charter?: string;
+  readonly model?: string;
+  readonly tools?: readonly string[];
+  readonly capabilities?: readonly AgentCapability[];
+  readonly status?: 'active' | 'inactive' | 'retired';
+}
+
+interface AgentCapability {
+  readonly name: string;
+  readonly level: 'expert' | 'proficient' | 'basic';
+}
+```
+
+---
+
+### `defineRouting(config): RoutingDefinition`
+
+Define routing rules with pattern matching and tier assignment.
+
+```typescript
+const routing = defineRouting({
+  rules: [
+    { pattern: 'feature-*', agents: ['@edie'], tier: 'standard' },
+    { pattern: 'docs-*', agents: ['@mcmanus'], tier: 'lightweight' },
+  ],
+  defaultAgent: '@coordinator',
+  fallback: 'coordinator',
+});
+```
+
+**Type:**
+
+```typescript
+interface RoutingDefinition {
+  readonly rules: readonly RoutingRule[];
+  readonly defaultAgent?: string;
+  readonly fallback?: 'ask' | 'default-agent' | 'coordinator';
+}
+
+interface RoutingRule {
+  readonly pattern: string;
+  readonly agents: readonly string[];
+  readonly tier?: 'direct' | 'lightweight' | 'standard' | 'full';
+  readonly priority?: number;
+}
+```
+
+---
+
+### `defineCeremony(config): CeremonyDefinition`
+
+Define ceremonies (standups, retros, etc.) with schedule and participants.
+
+```typescript
+const standup = defineCeremony({
+  name: 'standup',
+  trigger: 'schedule',
+  schedule: '0 9 * * 1-5',
+  participants: ['@edie', '@mcmanus'],
+  agenda: 'Yesterday / Today / Blockers',
+});
+```
+
+**Type:**
+
+```typescript
+interface CeremonyDefinition {
+  readonly name: string;
+  readonly trigger?: string;
+  readonly schedule?: string;
+  readonly participants?: readonly string[];
+  readonly agenda?: string;
+  readonly hooks?: readonly string[];
+}
+```
+
+---
+
+### `defineHooks(config): HooksDefinition`
+
+Define governance hooks — write paths, blocked commands, PII scrubbing.
+
+```typescript
+const hooks = defineHooks({
+  allowedWritePaths: ['src/**', 'test/**', '.squad/**'],
+  blockedCommands: ['rm -rf /', 'DROP TABLE'],
+  maxAskUser: 3,
+  scrubPii: true,
+  reviewerLockout: true,
+});
+```
+
+**Type:**
+
+```typescript
+interface HooksDefinition {
+  readonly allowedWritePaths?: readonly string[];
+  readonly blockedCommands?: readonly string[];
+  readonly maxAskUser?: number;
+  readonly scrubPii?: boolean;
+  readonly reviewerLockout?: boolean;
+}
+```
+
+---
+
+### `defineCasting(config): CastingDefinition`
+
+Define casting configuration — universe allowlists and overflow behavior.
+
+```typescript
+const casting = defineCasting({
+  allowlistUniverses: ['The Usual Suspects', 'Breaking Bad'],
+  overflowStrategy: 'generic',
+  capacity: { 'The Usual Suspects': 8 },
+});
+```
+
+**Type:**
+
+```typescript
+interface CastingDefinition {
+  readonly allowlistUniverses?: readonly string[];
+  readonly overflowStrategy?: 'reject' | 'generic' | 'rotate';
+  readonly capacity?: Readonly<Record<string, number>>;
+}
+```
+
+---
+
+### `defineTelemetry(config): TelemetryDefinition`
+
+Define OpenTelemetry configuration for observability.
+
+```typescript
+const telemetry = defineTelemetry({
+  enabled: true,
+  endpoint: 'http://localhost:4317',
+  serviceName: 'squad-prod',
+  sampleRate: 1.0,
+  aspireDefaults: true,
+});
+```
+
+**Type:**
+
+```typescript
+interface TelemetryDefinition {
+  readonly enabled?: boolean;
+  readonly endpoint?: string;
+  readonly serviceName?: string;
+  readonly sampleRate?: number;
+  readonly aspireDefaults?: boolean;
+}
+```
+
+---
+
+### `defineSquad(config): SquadSDKConfig`
+
+Compose all builders into a single SDK config.
+
+```typescript
+export default defineSquad({
+  version: '1.0.0',
+  team: defineTeam({ /* ... */ }),
+  agents: [defineAgent({ /* ... */ })],
+  routing: defineRouting({ /* ... */ }),
+});
+```
+
+**Type:**
+
+```typescript
+interface SquadSDKConfig {
+  readonly version?: string;
+  readonly team: TeamDefinition;
+  readonly agents: readonly AgentDefinition[];
+  readonly routing?: RoutingDefinition;
+  readonly ceremonies?: readonly CeremonyDefinition[];
+  readonly hooks?: HooksDefinition;
+  readonly casting?: CastingDefinition;
+  readonly telemetry?: TelemetryDefinition;
+}
+```
+
+---
+
 ## SquadClient
 
 Wraps `@github/copilot-sdk` with lifecycle management and auto-reconnection.

@@ -99,6 +99,41 @@
 - **Verdict:** 1 ready (merge), 2 safe (merge to dev), 1 requires clarification (redirect to Shayne for superseded-status). No blockers for immediate action.
 - **Output:** Assessment table + compatibility cascade summary provided to Brady.
 
+### 2026-03-06T[NOW]: Azure Function + Squad Sample Architecture
+
+- **Request:** Brady asked for a new sample: Azure Function + Squad. Takes an HTTP POST prompt and wakes up a team of agents to process it. Wanted to showcase SDK-First mode + serverless integration.
+
+- **Architecture Decision:** Content Review Squad — four parallel agents (Analyst, Subject Matter Expert, SEO Specialist, Editor) analyze blog posts/articles. Clear business value, parallelizable, showcases SkillRegistry routing.
+
+- **Design Principles:**
+  - **SDK-First Config** — `defineTeam()` + `defineAgent()` builders only (no YAML, no scaffolding)
+  - **Serverless Semantics** — HTTP POST trigger, stateless, prompt in body
+  - **Streaming Response** — Results aggregated as agents complete (async iterators)
+  - **Cost Transparency** — CostTracker + token metering for quota enforcement
+  - **Real-World Pattern** — Content review has immediate industry utility; devs adapt to email review, code review, proposals
+
+- **Why Azure Functions:**
+  - Serverless scalability (production-grade hosting)
+  - Native HTTP trigger (simple POST semantics)
+  - Dev UX (Functions Core Tools local emulator)
+  - TypeScript-first runtime v4
+  - Cost alignment with Squad's token-per-agent model
+
+- **Scope & Constraints:**
+  - No persistent state (request-scoped only)
+  - No auth/authz scaffolding (sample uses public endpoints)
+  - Happy path only (production error recovery is out of scope)
+  - Single-tenant (no multi-tenant isolation)
+  - **But:** design compounds to Lambda, GCP Cloud Functions, Vercel variants
+
+- **Files Created:**
+  - Issue #213: GitHub issue describing sample + acceptance criteria
+  - `.squad/decisions/inbox/keaton-azure-function-sample.md`: This architecture decision (proposal-first, pre-implementation)
+
+- **Next Handoff:** Issue #213 ready for Fenster (core dev) or Hockney (test expert) to implement. Brady reviews final sample in PR.
+
+- **Pattern Learned:** Serverless integration requires architectural clarity BEFORE implementation. Three questions must be answered first: (1) What's the user's mental model (request-scoped squad, or persistent team)? (2) How are agents configured (SDK-First or YAML)? (3) What makes this sample more useful than copy-paste examples? This sample answers all three.
+
 ### 2026-03-05T[NOW]: Migration Docs Gap Analysis — Issue #188 File Migration Guidance
 - **Task:** Brady requested review of migration docs for gaps exposed by issue #188. Users KevinUK and jeremythake hit "Unknown command: doctor" after upgrade (separate CLI bug), but KevinUK also asked critical migration question: "which files/folders exactly are safe to copy to the new .squad?" Verify the docs answer this question; if not, identify what's missing.
 - **Approach:** Read migration docs, verify against codebase behavior (init/upgrade logic, TEMPLATE_MANIFEST, migrations), trace user question to docs coverage.

@@ -681,3 +681,8 @@ The CLI couldn't run because `packages/squad-sdk/src/index.ts` was missing re-ex
 - Two SquadConfig types exist: `config/schema.ts` (simple, has `team/agents/ceremonies`) and `runtime/config.ts` (full runtime, has `models.defaultModel`). The builders `SquadSDKConfig` from `builders/types.ts` is the correct type for SDK-first mode — it has `TeamDefinition`, `AgentDefinition`, `RoutingDefinition`, `CeremonyDefinition`.
 - Config loading pattern: the existing `loadConfig()` in `runtime/config.ts` accepts `module.default || module.squadConfig`. Build command also accepts `module.config` for ergonomic default exports.
 - Generated markdown format should match the test expectations in `test/build-command.test.ts` which has its own stub generators — when replacing stubs with real imports, align on content structure.
+
+- Azure Functions v4 model for Node.js uses pp.http() registration with HttpRequest/HttpResponseInit types from @azure/functions. When running outside the Functions runtime (e.g., 
+px tsx), it logs a test-mode warning but still validates config — useful for dry-run testing.
+- Sample pattern: existing samples use ile:../../packages/squad-sdk for local SDK dependency, 	ype: module in package.json, and NodeNext module resolution. New samples should follow this exact pattern.
+- The SDK builders (defineSquad, defineTeam, defineAgent, defineRouting) are imported from @bradygaster/squad-sdk/builders — the subpath export, not the barrel. This is the SDK-First pattern for programmatic config.

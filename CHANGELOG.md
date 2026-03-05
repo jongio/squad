@@ -4,7 +4,28 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added — SDK-First Mode (Phase 1)
+- **Builder functions** — Type-safe team configuration with runtime validation
+  - `defineTeam()` — Team metadata, project context, member roster
+  - `defineAgent()` — Agent definition with role, model, tools, capabilities
+  - `defineRouting()` — Routing rules with pattern matching and priority
+  - `defineCeremony()` — Ceremony scheduling (standups, retros, etc.)
+  - `defineHooks()` — Governance hooks (write paths, blocked commands, PII scrubbing)
+  - `defineCasting()` — Casting configuration (universe allowlists, overflow strategy)
+  - `defineTelemetry()` — OpenTelemetry configuration
+  - `defineSquad()` — Top-level composition builder
+- **`squad build` command** — Compile TypeScript definitions to `.squad/` markdown
+  - Generates `.squad/team.md`, `.squad/routing.md`, agent charters, ceremonies
+  - Supports `--check` (validation), `--dry-run` (preview), `--watch` (file monitoring stub)
+  - Protected files (decisions.md, history.md) never overwritten
+- **SDK Mode Detection** — Coordinator prompt includes SDK-First mode awareness (#194)
+- **Documentation**
+  - New guide: [SDK-First Mode](docs/sdk-first-mode.md) — concepts, builder reference, examples
+  - Updated [SDK Reference](docs/reference/sdk.md) — builder function signatures and types
+  - README quick reference for SDK-First teams
+
 ### Added — Remote Squad Mode (ported from @spboyer's [bradygaster/squad#131](https://github.com/bradygaster/squad/pull/131))
+
 - `resolveSquadPaths()` dual-root resolver — project-local vs team identity directories (#311)
 - `squad doctor` command — 9-check setup validation with emoji output (#312)
 - `squad link <path>` command — link a project to a remote team root (#313)
