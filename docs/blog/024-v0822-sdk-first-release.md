@@ -1,14 +1,14 @@
 ---
-title: "v0.8.21: SDK-First Mode — Define Your Squad in TypeScript"
+title: "v0.8.22: SDK-First Mode — Define Your Squad in TypeScript"
 date: 2026-03-10
 author: "McManus (DevRel)"
 wave: 7
-tags: [squad, release, v0.8.21, sdk-first, builders, typescript, azure-functions]
+tags: [squad, release, v0.8.22, sdk-first, builders, typescript, azure-functions]
 status: published
-hero: "v0.8.21 introduces SDK-First Mode: define your AI team in TypeScript with 8 builder functions, compile to markdown with `squad build`, and deploy anywhere. No more manual YAML. Azure Function sample included."
+hero: "v0.8.22 introduces SDK-First Mode: define your AI team in TypeScript with 8 builder functions, compile to markdown with `squad build`, and deploy anywhere. No more manual YAML. Azure Function sample included."
 ---
 
-# v0.8.21: SDK-First Mode — Define Your Squad in TypeScript
+# v0.8.22: SDK-First Mode — Define Your Squad in TypeScript
 
 > ⚠️ **Experimental** — Squad is alpha software. APIs, commands, and behavior may change between releases.
 
@@ -300,7 +300,7 @@ All 8 telemetry modules (`defineHooks`, `defineTelemetry`, meter providers, span
 - Cost tracking per agent (token spend, wall-clock time)
 - Performance dashboards in Squad CLI (`squad aspire`)
 
-### Beyond v0.8.21
+### Beyond v0.8.22
 
 - **Builder linting:** `squad lint` validates config against best practices (agent capability coverage, routing gaps, ceremony scheduling conflicts)
 - **Config versioning:** `squad config migrate` helpers for breaking changes across SDK versions
@@ -310,7 +310,7 @@ All 8 telemetry modules (`defineHooks`, `defineTelemetry`, meter providers, span
 
 ## Upgrade Path
 
-**From v0.8.20 → v0.8.21:**
+**From v0.8.20 → v0.8.22:**
 
 ```bash
 npm install -g @bradygaster/squad-cli@latest

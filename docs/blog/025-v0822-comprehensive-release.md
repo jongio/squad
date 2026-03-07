@@ -1,18 +1,18 @@
 ---
-title: "v0.8.21: The Complete Release — SDK-First, Bug Fixes, and Stability"
+title: "v0.8.22: The Complete Release — SDK-First, Bug Fixes, and Stability"
 date: 2026-03-11
 author: "McManus (DevRel)"
 wave: 7
-tags: [squad, release, v0.8.21, sdk-first, stability, cli, typescript]
+tags: [squad, release, v0.8.22, sdk-first, stability, cli, typescript]
 status: published
-hero: "v0.8.21 is a major release combining SDK-First Mode, 26 closed issues, 16 merged PRs, critical crash fixes, and platform stabilization. 3,724 passing tests. Ready for production."
+hero: "v0.8.22 is a major release combining SDK-First Mode, 26 closed issues, 16 merged PRs, critical crash fixes, and platform stabilization. 3,724 passing tests. Ready for production."
 ---
 
-# v0.8.21: The Complete Release — SDK-First, Bug Fixes, and Stability
+# v0.8.22: The Complete Release — SDK-First, Bug Fixes, and Stability
 
 > ⚠️ **Experimental** — Squad is alpha software. APIs, commands, and behavior may change between releases.
 
-> _v0.8.21 ships SDK-First Mode alongside critical bug fixes that eliminate installation crashes, wire missing CLI commands, fix model configuration round-trips, and harden the Windows test suite. This is a major release wave: 26 issues closed, 16 PRs merged, 3,724 tests passing._
+> _v0.8.22 ships SDK-First Mode alongside critical bug fixes that eliminate installation crashes, wire missing CLI commands, fix model configuration round-trips, and harden the Windows test suite. This is a major release wave: 26 issues closed, 16 PRs merged, 3,724 tests passing._
 
 ---
 
@@ -236,7 +236,7 @@ GitHub Actions pipeline fixed and green. All workflows now run reliably without 
 | Critical crash fixes | 1 (#247 — OTel dependency) |
 | Documentation pages added | 2 (SDK-First Mode + SDK Reference) |
 | Sample projects | 1 (Azure Function Content Review Squad) |
-| Release candidate version | 0.8.21-preview.9 |
+| Release candidate version | 0.8.22-preview.9 |
 
 ---
 
@@ -336,7 +336,7 @@ function resolveSquadPaths(projectRoot: string, remoteTeamRoot?: string) {
 
 ## What's Coming Next
 
-### v0.8.22 (Roadmap)
+### v0.8.23 (Roadmap)
 
 - `squad init --sdk` flag — opt-in to SDK-First mode during initialization (#249)
 - `squad migrate` command — convert existing markdown squads to SDK-First (#250)
@@ -365,7 +365,7 @@ function resolveSquadPaths(projectRoot: string, remoteTeamRoot?: string) {
 
 ## Upgrade Path
 
-### From v0.8.20 → v0.8.21
+### From v0.8.20 → v0.8.22
 
 ```bash
 npm install -g @bradygaster/squad-cli@latest
@@ -377,7 +377,7 @@ npm install --save-dev @bradygaster/squad-cli@latest
 
 ### Fresh Install (Crash Fix Benefit)
 
-If you've had issues with `npx @bradygaster/squad-cli` on fresh machines, v0.8.21 resolves the OTel dependency crash:
+If you've had issues with `npx @bradygaster/squad-cli` on fresh machines, v0.8.22 resolves the OTel dependency crash:
 
 ```bash
 npx @bradygaster/squad-cli@latest doctor
@@ -457,7 +457,7 @@ Full sample: [github.com/bradygaster/squad/tree/main/samples/azure-function-squa
 
 ## Important Fixes for Your Setup
 
-If you've experienced any of these issues, v0.8.21 resolves them:
+If you've experienced any of these issues, v0.8.22 resolves them:
 
 - ✅ **`npx @bradygaster/squad-cli` crashes on fresh install** (#247) — Fixed via OTel resilience
 - ✅ **`squad rc` command not found** (#244) — Now wired into CLI
@@ -489,4 +489,4 @@ If you've experienced any of these issues, v0.8.21 resolves them:
 
 ---
 
-_This post was written by McManus, the DevRel on Squad's own team. Squad is an open source project by [@bradygaster](https://github.com/bradygaster). [Upgrade to v0.8.21 →](../../../)_
+_This post was written by McManus, the DevRel on Squad's own team. Squad is an open source project by [@bradygaster](https://github.com/bradygaster). [Upgrade to v0.8.22 →](../../../)_
