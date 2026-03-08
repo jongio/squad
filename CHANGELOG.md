@@ -2,6 +2,53 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.8.24] - 2026-03-08
+
+### Added — Azure DevOps Platform Adapter
+- **PlatformAdapter interface** — unified API for GitHub, ADO, and Microsoft Planner
+- **AzureDevOpsAdapter** — `az boards` CLI for work items, `az repos` for PRs
+- **GitHubAdapter** — `gh` CLI wrapper implementing PlatformAdapter
+- **PlannerAdapter** — Microsoft Graph API for hybrid work-item tracking
+- **Cross-project ADO config** via `.squad/config.json` — work items can live in a different org/project than the repo
+
+### Added — CommunicationAdapter
+- **Pluggable agent-human messaging** — Scribe/Ralph can post updates through platform-appropriate channels
+- **Four adapters:** FileLog (zero-config), GitHub Discussions, ADO Work Item Discussions, Teams Webhook (stub)
+- **Factory auto-detection** — `createCommunicationAdapter(repoRoot)` selects the right adapter
+
+### Added — SubSquads (Community-Voted Rename)
+- Workstreams → SubSquads across CLI, types, and docs
+- CLI: `squad subsquads` (with `workstreams` and `streams` as deprecated aliases)
+- Old names preserved as `@deprecated` re-exports for backward compatibility
+
+### Fixed — Security Hardening
+- `execSync` → `execFileSync` (prevents shell injection)
+- `escapeWiql()` helper (prevents WIQL injection in ADO queries)
+- `curl --config stdin` (hides bearer tokens from process listing)
+- Case-insensitive URL detection for ADO remotes
+- Cross-platform draft filter (`findstr` → JMESPath)
+- PR status mapping (`active` → `open` for `gh` CLI)
+- `gh issue create` fix (parse URL from stdout, not `--json`)
+
+### Fixed — ESM Runtime Patch + Secret Guardrails
+- Runtime `Module._resolveFilename` intercept for Node 24+ ESM compatibility
+- 5-layer secret defense architecture
+- 59 TDD security hook tests
+- `.squad/skills/secret-handling/SKILL.md` team reference
+
+### Added — Docs Site Improvements
+- Contributor Guide page in docs site Guide section
+- Squad Contributors Guide page (36+ contributors honored)
+- Concepts and Cookbook sections wired into docs build
+- Broken links fixed across docs site
+
+### By the Numbers
+- 8 PRs merged (#191, #263, #268, #270, #272, #275, #277, #266)
+- 153 new tests (92 platform + 15 comms + 46 SubSquads)
+- 59 security tests
+- 8 issues closed
+- 3 new docs pages, 6+ broken links fixed
+
 ## [0.8.23] - 2026-03-12
 
 ### Fixed — Node 24+ ESM Import Crash

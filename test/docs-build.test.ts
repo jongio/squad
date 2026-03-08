@@ -17,7 +17,7 @@ const TEMPLATE_PATH = join(DOCS_DIR, 'template.html');
 // All sections in the simplified docs structure (5 sections + blog)
 const EXPECTED_GET_STARTED = ['installation', 'first-session'];
 
-const EXPECTED_GUIDES = ['tips-and-tricks', 'sample-prompts', 'personal-squad'];
+const EXPECTED_GUIDES = ['tips-and-tricks', 'sample-prompts', 'personal-squad', 'contributing', 'contributors'];
 
 const EXPECTED_REFERENCE = ['cli', 'sdk', 'config'];
 
@@ -26,6 +26,10 @@ const EXPECTED_SCENARIOS = [
 ];
 
 const EXPECTED_BLOG = [
+  '026-whats-new-ado-comms-subsquads',
+  '025-squad-goes-enterprise-azure-devops', '024-v0823-release',
+  '023-subsquads-horizontal-scaling', '023-squad-goes-enterprise-azure-devops',
+  '022-welcome-to-the-new-squad', '021-the-migration',
   '020-docs-reborn', '019-shaynes-remote-mode', '018-the-adapter-chronicles',
   '017-version-alignment', '016-wave-3-docs-that-teach', '015-wave-2-the-repl-moment',
   '014-wave-1-otel-and-aspire', '013-the-replatform-begins', '012-trending-on-github',
