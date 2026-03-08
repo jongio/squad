@@ -206,6 +206,46 @@ mark[data-pagefind-highlight] {
   }
 }
 
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(30px, -20px); }
+  66% { transform: translate(-20px, 15px); }
+}
+
+@keyframes float-slow-reverse {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(-25px, 20px); }
+  66% { transform: translate(15px, -15px); }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+@keyframes agent-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 20s ease-in-out infinite;
+}
+
+.animate-float-slow-reverse {
+  animation: float-slow-reverse 25s ease-in-out infinite;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 8s ease-in-out infinite;
+}
+
 .animate-fade-up {
   opacity: 0;
   animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -235,13 +275,25 @@ mark[data-pagefind-highlight] {
 .delay-700 { animation-delay: 700ms; }
 .delay-800 { animation-delay: 800ms; }
 
+.agent-line {
+  opacity: 0;
+  animation: agent-appear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(800ms + var(--delay, 0) * 150ms);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up,
   .animate-fade-up-scale,
   .animate-fade-in,
-  .animate-slide-in-right {
+  .animate-slide-in-right,
+  .agent-line {
     opacity: 1;
     animation: none;
     transform: none;
+  }
+  .animate-float-slow,
+  .animate-float-slow-reverse,
+  .animate-pulse-subtle {
+    animation: none;
   }
 }
